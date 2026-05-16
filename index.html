@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  
+  <!-- FONT AWESOME -->
+  <link
+    rel="stylesheet"
+    href="./assets/fontawesome-free-7.2.0-web/css/all.min.css"
+    />
+
+
+
+  <title>Advanced Todo Dashboard</title>
+
+  <link rel="stylesheet" href="style.css"/>
+</head>
+
+<body>
+
+  <!-- BACKGROUND EFFECTS -->
+  <div class="blur blur-one"></div>
+  <div class="blur blur-two"></div>
+
+  <main class="dashboard">
+
+    <!-- LEFT SIDE -->
+    <section class="left-panel">
+
+      <!-- HEADER -->
+      <header class="top-bar">
+        <div>
+          <p class="welcome-text">Hello Fausiyah 👋</p>
+          <h1>Task Management Dashboard</h1>
+        </div>
+
+        <button class="new-task-btn">
+          <i class="fa-solid fa-plus"></i>
+          New Task
+        </button>
+      </header>
+
+      <!-- STATS -->
+      <section class="stats-grid">
+
+        <article class="stat-card">
+          <div>
+            <p>Total Tasks</p>
+            <h2>28</h2>
+          </div>
+
+          <div class="stat-icon blue">
+            <i class="fa-solid fa-list-check"></i>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div>
+            <p>Completed</p>
+            <h2>23</h2>
+          </div>
+
+          <div class="stat-icon green">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div>
+            <p>In Progress</p>
+            <h2>3</h2>
+          </div>
+
+          <div class="stat-icon orange">
+            <i class="fa-solid fa-spinner"></i>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div>
+            <p>Overdue</p>
+            <h2>2</h2>
+          </div>
+
+          <div class="stat-icon red">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- TASKS -->
+      <section class="task-section">
+
+        <!-- TASK CARD -->
+        <article
+          class="task-card"
+          data-testid="test-todo-card"
+        >
+
+          <!-- TOP -->
+          <div class="task-top">
+
+            <div class="task-left">
+
+              <label class="checkbox-wrapper">
+                <input
+                  type="checkbox"
+                  data-testid="test-todo-complete-toggle"
+                />
+                <span class="custom-checkbox"></span>
+              </label>
+
+              <div>
+
+                <h2 data-testid="test-todo-title">
+                  Design Advanced HNG Stage 0 Interface
+                </h2>
+
+                <p
+                  class="task-status"
+                  data-testid="test-todo-status"
+                >
+                  In Progress
+                </p>
+
+              </div>
+
+            </div>
+
+            <div class="task-actions">
+
+              <button
+                class="icon-btn"
+                data-testid="test-todo-edit-button"
+                id="openModalBtn"
+              >
+                <i class="fa-solid fa-pen"></i>
+              </button>
+
+              <button
+                class="icon-btn delete"
+                data-testid="test-todo-delete-button"
+              >
+                <i class="fa-solid fa-trash"></i>
+              </button>
+
+            </div>
+
+          </div>
+
+          <!-- DESCRIPTION -->
+          <p
+            class="task-description"
+            data-testid="test-todo-description"
+          >
+            Build a stunning, responsive and accessible task management UI
+            that demonstrates modern frontend engineering principles,
+            micro-interactions, animations and clean semantic structure.
+          </p>
+
+
+
+          <!-- EXPAND BUTTON -->
+        <button
+          class="expand-btn"
+          data-testid="test-todo-expand-toggle"
+          id="expandBtn"
+        >
+          Show More
+        </button>
+
+        <!-- COLLAPSIBLE -->
+        <div
+          class="collapsible-section"
+          data-testid="test-todo-collapsible-section"
+          id="collapsibleContent"
+        >
+
+          <div class="extra-content">
+
+            <div class="checklist-item">
+              <i class="fa-solid fa-check"></i>
+              <span>Responsive mobile/tablet layouts</span>
+            </div>
+
+            <div class="checklist-item">
+              <i class="fa-solid fa-check"></i>
+              <span>Animated dashboard statistics</span>
+            </div>
+
+            <div class="checklist-item">
+              <i class="fa-solid fa-check"></i>
+              <span>Accessible semantic HTML</span>
+            </div>
+
+            <div class="checklist-item">
+              <i class="fa-solid fa-check"></i>
+              <span>Professional glassmorphism UI</span>
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+          <!-- PROGRESS -->
+          <div class="progress-section">
+
+            <div class="progress-top">
+              <span>Project Progress</span>
+              <span>69%</span>
+            </div>
+
+            <div class="progress-bar">
+              <div class="progress-fill"></div>
+            </div>
+
+          </div>
+
+          <!-- DETAILS -->
+          <div class="task-details">
+
+            <span
+              class="priority high-priority"
+              data-testid="test-todo-priority"
+            >
+              High Priority
+            </span>
+
+            <!-- PRIORITY INDICATOR -->
+            <span
+              class="priority-indicator"
+              data-testid="test-todo-priority-indicator"
+            >
+              🔥 Critical Task
+            </span>
+
+            <span
+              class="due-date"
+              data-testid="test-todo-due-date"
+            >
+              <i class="fa-regular fa-calendar"></i>
+              May 20, 2026
+            </span>
+
+
+            <!-- TIME REMAINING -->
+            <span
+              class="time-left"
+              data-testid="test-todo-time-remaining"
+              id="timeRemaining"
+            >
+            <i class="fa-regular fa-clock"></i>
+            Calculating...
+            </span>
+
+            <!-- OVERDUE -->
+            <span
+              class="overdue-indicator"
+              data-testid="test-todo-overdue-indicator"
+            >
+              On Schedule
+            </span>
+
+          </div>
+
+          <!-- STATUS CONTROL -->
+        <div class="status-control-wrapper">
+
+          <label for="statusSelect">
+            Task Status:
+          </label>
+
+          <select
+            id="statusSelect"
+            data-testid="test-todo-status-control"
+          >
+            <option>In Progress</option>
+            <option>Completed</option>
+            <option>Under Review</option>
+            <option>Pending</option>
+          </select>
+
+        </div>
+
+          <!-- TAGS -->
+          <div
+            class="tags"
+            data-testid="test-todo-tags"
+          >
+            <span>Frontend</span>
+            <span>HTML</span>
+            <span>CSS</span>
+            <span>UI/UX</span>
+            <span>Accessibility</span>
+          </div>
+
+        </article>
+
+        <!-- SECOND CARD -->
+        <article class="task-card secondary">
+
+          <div class="task-top">
+
+            <div class="task-left">
+
+              <label class="checkbox-wrapper">
+                <input type="checkbox" checked/>
+                <span class="custom-checkbox"></span>
+              </label>
+
+              <div>
+                <h2>Deploy Portfolio Website</h2>
+                <p class="task-status completed">
+                  Completed
+                </p>
+              </div>
+
+            </div>
+
+          </div>
+
+          <p class="task-description">
+            Optimized SEO, deployed project and improved performance score.
+          </p>
+
+          <div class="task-details">
+            <span class="priority low-priority">
+              Low Priority
+            </span>
+
+            <span class="due-date">
+              <i class="fa-regular fa-calendar"></i>
+              May 15, 2026
+            </span>
+          </div>
+
+        </article>
+
+        <!-- THIRD CARD -->
+        <article class="task-card glassmorphism">
+
+          <div class="task-top">
+
+            <div class="task-left">
+
+              <label class="checkbox-wrapper">
+                <input type="checkbox"/>
+                <span class="custom-checkbox"></span>
+              </label>
+
+              <div>
+                <h2>Create LinkedIn Showcase Post</h2>
+
+                <p class="task-status review">
+                  Under Review
+                </p>
+              </div>
+
+            </div>
+
+          </div>
+
+          <p class="task-description">
+            Prepare premium screenshots and animations for project showcase.
+          </p>
+
+          <div class="task-details">
+
+            <span class="priority medium-priority">
+              Medium Priority
+            </span>
+
+            <span class="time-left">
+              <i class="fa-regular fa-clock"></i>
+              Tomorrow
+            </span>
+
+          </div>
+
+        </article>
+
+      </section>
+
+    </section>
+
+    <!-- RIGHT PANEL -->
+    <aside class="right-panel">
+
+      <div class="profile-card">
+
+        <img
+          src="assets/images/fauz.jpg"
+          alt="Profile Image"
+        />
+
+        <h3>Fausiyah Oladejo</h3>
+
+        <p>Software Developer & Computer Engineering Student</p>
+
+      </div>
+
+      <div class="activity-card">
+
+        <h3>Today's Productivity</h3>
+
+        <div class="circle-progress">
+          <span>78%</span>
+        </div>
+
+        <p>You completed 4 tasks today 🚀</p>
+
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- EDIT MODAL -->
+  <div class="modal-overlay modal-container" data-testid="test-todo-edit-form">
+    <div class="modal-box">
+    <h1>Edit Task</h1>
+
+        <textarea class="form-group text" data-testid="test-todo-edit-title-input"
+        >Design Advanced HNG Stage 1A Interface
+        </textarea>
+      </div>
+
+      <!-- DESCRIPTION INPUT -->
+      <div class="form-group">
+        <label>Description</label>
+
+        <textarea
+          data-testid="test-todo-edit-description-input"
+        >Build a highly polished frontend dashboard that demonstrates responsive layouts and accessibility.</textarea>
+      </div>
+
+      <!-- PRIORITY SELECT -->
+      <div class="form-group">
+        <label>Priority</label>
+
+        <select
+          data-testid="test-todo-edit-priority-select"
+        >
+          <option>High</option>
+          <option>Medium</option>
+          <option>Low</option>
+        </select>
+      </div>
+
+      <!-- DATE -->
+      <div class="form-group">
+        <label>Due Date</label>
+
+        <input
+          type="date"
+          data-testid="test-todo-edit-due-date-input"
+        />
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="modal-actions">
+
+        <button
+          class="save-btn"
+          data-testid="test-todo-save-button"
+        >
+          Save Changes
+        </button>
+
+        <button
+          class="cancel-btn"
+          data-testid="test-todo-cancel-button"
+          id="cancelModalBtn"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    <!--</div>
+    </div>-->
+  </div>
+
+  </div>
+
+  <!-- SCRIPT -->
+  <script src="script.js"></script>
+
+</body>
+</html>

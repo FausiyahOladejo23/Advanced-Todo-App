@@ -1,0 +1,45 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor Files
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Environment Files
+.env
+
+# Dependency Folders
+node_modules/
+
+# Build Folders
+dist/
+build/
+
+# Temporary Files
+*.tmp
+*.temp
+
+# Cache
+.cache/
+
+# Mac System Files
+.AppleDouble
+.LSOverride
+
+# Netlify
+.netlify/
+
+# Vercel
+.vercel/
+
+# Coverage Reports
+coverage/
+
+# Runtime Files
+*.pid
+*.seed
+*.pid.lock
