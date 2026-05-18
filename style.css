@@ -48,20 +48,20 @@ body{
 }
 
 .blur-one{
-  width:300px;
+  width:0px;
   height:300px;
   /*background:#3b82f6;*/
   background: #2e3840;
   top:-80px;
-  left:-50px;
+  left:0px;
 }
 
 .blur-two{
-  width:350px;
+  width:0px;
   height:350px;
   background: #2e3840;
-  bottom:-100px;
-  right:-50px;
+  bottom:0px;
+  right:0px;
 }
 
 /* =========================
@@ -72,8 +72,8 @@ body{
   display:grid;
   grid-template-columns: 1fr 320px;
   gap:30px;
-
-  padding:40px;
+  margin: 0 auto;
+  padding:20px;
 }
 
 /* =========================
@@ -407,7 +407,6 @@ body{
 
   border-radius:30px;
 
-
   background:linear-gradient(
     90deg,
     #c53211,
@@ -740,6 +739,357 @@ select:focus-visible{
 
 
 
+/* ================================================================
+   STAGE 1A  —  style-additions.css
+   Copy-paste ALL of this at the very BOTTOM of your style.css
+   ================================================================ */
+ 
+ 
+/* ── CARD LAYER SYSTEM (inline edit swap) ──────────────────────
+ 
+   The main task card holds two divs:
+     .card-view   — the normal visible card content
+     .card-edit   — the edit form, hidden by default
+ 
+   JS toggles these two classes:
+     .card-view.hidden  → hides the normal view  (opacity + scale out)
+     .card-edit.active  → shows the edit form    (opacity + scale in)
+*/
+ 
+.card-view {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+ 
+.card-view.hidden {
+  display: none;
+}
+ 
+/* Edit form: hidden until .active is added */
+.card-edit {
+  display: none;
+  animation: editSlideIn 0.25s ease forwards;
+}
+ 
+.card-edit.active {
+  display: block;
+}
+ 
+/* Smooth slide-in animation when the edit form appears */
+@keyframes editSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+ 
+/* Edit form header (pencil icon + "Edit Task" title) */
+.card-edit-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+ 
+.card-edit-header i {
+  font-size: 18px;
+  color: #f97316;
+}
+ 
+.card-edit-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+ 
+/* ── SHARED FORM STYLES ────────────────────────────────────────
+   Used by both the inline edit form and the new task panel
+*/
+ 
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+ 
+.form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+ 
+.form-group label i {
+  font-size: 11px;
+  opacity: 0.7;
+}
+ 
+.form-group input,
+.form-group textarea,
+.form-group select {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+ 
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+ 
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #f97316;
+  background: rgba(255, 255, 255, 0.1);
+}
+ 
+.form-group select option {
+  background: #2a2a3a;
+  color: #fff;
+}
+ 
+/* Two form fields side by side */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+ 
+/* Save + Cancel buttons row */
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+ 
+/* ── EXPAND / COLLAPSE ─────────────────────────────────────── */
+[data-testid="test-todo-collapsible-section"] {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+ 
+[data-testid="test-todo-collapsible-section"].open {
+  max-height: 300px;
+}
+ 
+/* ── STATUS BADGE COLOURS ──────────────────────────────────── */
+.task-status.in-progress { color: #f97316; }
+.task-status.completed   { color: #22c55e; }
+.task-status.review      { color: #a855f7; }
+.task-status.pending     { color: #94a3b8; }
+ 
+ 
+/* ================================================================
+   NEW TASK SLIDE-IN PANEL
+   ================================================================
+ 
+   The panel sits off the right edge of the screen at all times:
+     transform: translateX(100%)   ← invisible, off to the right
+ 
+   When JS adds class "open":
+     transform: translateX(0)      ← slides into view
+ 
+   The backdrop is a dark transparent overlay behind the panel.
+   Clicking it closes the panel.
+*/
+ 
+/* Dark backdrop */
+.nt-backdrop {
+  position: fixed;
+  inset: 0;                           /* covers the whole screen */
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+  z-index: 900;
+  opacity: 0;
+  pointer-events: none;               /* not clickable when hidden */
+  transition: opacity 0.3s ease;
+}
+ 
+.nt-backdrop.open {
+  opacity: 1;
+  pointer-events: all;                /* clickable when visible */
+}
+ 
+/* The panel */
+.new-task-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 420px;
+  max-width: 95vw;                    /* shrinks on small screens */
+  background: #1e1e2e;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);        /* starts off-screen */
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.4);
+}
+ 
+.new-task-panel.open {
+  transform: translateX(0);           /* slides into view */
+}
+ 
+/* ── Panel header ─────────────────────────────────────────── */
+.nt-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;                     /* don't let header shrink */
+}
+ 
+.nt-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+ 
+.nt-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f97316, #ef4444);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+ 
+.nt-icon-wrap i {
+  font-size: 20px;
+  color: #fff;
+}
+ 
+.nt-panel-title h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 3px;
+}
+ 
+.nt-panel-title p {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+}
+ 
+/* X button to close the panel */
+.nt-close-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+ 
+.nt-close-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+ 
+/* ── Scrollable body ─────────────────────────────────────── */
+.nt-panel-body {
+  flex: 1;
+  overflow-y: auto;                   /* scroll if content is tall */
+  padding: 24px;
+}
+ 
+/* Style the scrollbar inside the panel */
+.nt-panel-body::-webkit-scrollbar       { width: 4px; }
+.nt-panel-body::-webkit-scrollbar-track { background: transparent; }
+.nt-panel-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+ 
+/* Required asterisk */
+.required { color: #ef4444; margin-left: 2px; }
+ 
+/* Small helper text */
+.hint { font-size: 10px; color: rgba(255,255,255,0.3); font-weight: 400; margin-left: 4px; }
+ 
+/* Error message (shown when title is blank) */
+.nt-error {
+  display: none;                      /* hidden by default */
+  font-size: 12px;
+  color: #ef4444;
+  margin: -8px 0 12px;
+  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 6px;
+  border-left: 3px solid #ef4444;
+}
+ 
+/* ── Footer with action buttons ─────────────────────────── */
+.nt-panel-footer {
+  display: flex;
+  gap: 10px;
+  padding: 20px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+ 
+.nt-save-btn {
+  flex: 1;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+ 
+.nt-cancel-btn {
+  padding: 12px 20px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+ 
+/* ── Newly created card entry animation ──────────────────── */
+.new-card {
+  border-left: 3px solid #f97316;
+}
+ 
+/* ── Mobile: panel goes full-width on small screens ─────── */
+@media (max-width: 480px) {
+  .new-task-panel {
+    width: 100vw;
+  }
+ 
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
 
 /* =========================
    RESPONSIVE
@@ -747,10 +1097,9 @@ select:focus-visible{
 
 @media(max-width:1100px){
 
-
   .dashboard{
     grid-template-columns:1fr;
-    width: 95%;
+    width: 100%;
     margin:0 auto;
   }
 
@@ -768,14 +1117,13 @@ select:focus-visible{
     margin: 0 auto;
   }
 
-
 }
 
 @media(max-width:700px){
 
   .dashboard{
     padding:20px;
-    width: 95%;
+    width: 98%;
     margin: 0 auto;
   }
 
@@ -816,4 +1164,3 @@ select:focus-visible{
   }
 
 }
-

@@ -10,18 +10,12 @@
     href="./assets/fontawesome-free-7.2.0-web/css/all.min.css"
     />
 
-
-
   <title>Advanced Todo Dashboard</title>
 
   <link rel="stylesheet" href="style.css"/>
 </head>
 
 <body>
-
-  <!-- BACKGROUND EFFECTS -->
-  <div class="blur blur-one"></div>
-  <div class="blur blur-two"></div>
 
   <main class="dashboard">
 
@@ -35,7 +29,8 @@
           <h1>Task Management Dashboard</h1>
         </div>
 
-        <button class="new-task-btn">
+        <!-- NEW TASK BUTTON — triggers the slide-in panel -->
+        <button class="new-task-btn" id="openNewTaskBtn">
           <i class="fa-solid fa-plus"></i>
           New Task
         </button>
@@ -91,7 +86,16 @@
       </section>
 
       <!-- TASKS -->
-      <section class="task-section">
+      <section class="task-section" id="taskList">
+
+        <!--
+             MAIN TASK CARD  (Stage 1A)
+             The card has TWO layers inside it:
+               .card-view  — what you normally see
+               .card-edit  — the inline edit form (hidden by default)
+             JS swaps which one is visible.
+        -->
+
 
         <!-- TASK CARD -->
         <article
@@ -99,9 +103,9 @@
           data-testid="test-todo-card"
         >
 
-          <!-- TOP -->
+        <!-- ── LAYER 1: NORMAL CARD VIEW ─────────────────── -->
+        <div class="card-view">
           <div class="task-top">
-
             <div class="task-left">
 
               <label class="checkbox-wrapper">
@@ -155,9 +159,7 @@
             class="task-description"
             data-testid="test-todo-description"
           >
-            Build a stunning, responsive and accessible task management UI
-            that demonstrates modern frontend engineering principles,
-            micro-interactions, animations and clean semantic structure.
+            Build a stunning, responsive and accessible task management UI that demonstrates modern frontend engineering principles, micro-interactions, animations and clean semantic structure.
           </p>
 
 
@@ -297,8 +299,67 @@
             <span>UI/UX</span>
             <span>Accessibility</span>
           </div>
+        </div>
+        <!-- ── END LAYER 1 ─────────────────────────────── -->
 
+
+        <!-- ── LAYER 2: INLINE EDIT FORM ──────────────────
+               Hidden by default (display:none via CSS).
+               JS reveals this and hides .card-view when
+               the edit button is clicked.
+          ────────────────────────────────────────────────── -->
+          <div class="card-edit" data-testid="test-todo-edit-form" role="form" aria-label="Edit task form">
+ 
+            <div class="card-edit-header">
+              <i class="fa-solid fa-pen-to-square"></i>
+              <h3>Edit Task</h3>
+            </div>
+ 
+            <div class="form-group">
+              <label for="editTitle">Title</label>
+              <input type="text" id="editTitle"
+                data-testid="test-todo-edit-title-input"
+                placeholder="Task title..."/>
+            </div>
+            
+            <div class="form-group">
+              <label for="editDesc">Description</label>
+              <textarea id="editDesc" rows="3"
+                data-testid="test-todo-edit-description-input"
+                placeholder="Task description..."></textarea>
+            </div>
+ 
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editPriority">Priority</label>
+                <select id="editPriority" data-testid="test-todo-edit-priority-select">
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="editDueDate">Due Date</label>
+                <input type="date" id="editDueDate"
+                  data-testid="test-todo-edit-due-date-input"/>
+              </div>
+            </div>
+ 
+            <div class="form-actions">
+              <button class="save-btn" data-testid="test-todo-save-button">
+                <i class="fa-solid fa-floppy-disk"></i> Save Changes
+              </button>
+              <button class="cancel-btn" data-testid="test-todo-cancel-button">
+                <i class="fa-solid fa-xmark"></i> Cancel
+              </button>
+            </div>
+ 
+          </div>
+          <!-- ── END LAYER 2 ─────────────────────────────── -->
         </article>
+        <!-- ══ END MAIN TASK CARD ══ -->
+
+
 
         <!-- SECOND CARD -->
         <article class="task-card secondary">
@@ -419,73 +480,115 @@
 
   </main>
 
-  <!-- EDIT MODAL -->
-  <div class="modal-overlay modal-container" data-testid="test-todo-edit-form">
-    <div class="modal-box">
-    <h1>Edit Task</h1>
+  
 
-        <textarea class="form-group text" data-testid="test-todo-edit-title-input"
-        >Design Advanced HNG Stage 1A Interface
-        </textarea>
+
+<!-- ══════════════════════════════════════════════════════════
+       NEW TASK SLIDE-IN PANEL
+       Slides in from the right when "+ New Task" is clicked.
+       Has a dark backdrop behind it.
+  ══════════════════════════════════════════════════════════════ -->
+ 
+  <!-- Dark backdrop — clicking it closes the panel -->
+  <div class="nt-backdrop" id="ntBackdrop"></div>
+ 
+  <!-- The panel itself -->
+  <aside class="new-task-panel" id="newTaskPanel" role="dialog" aria-modal="true" aria-labelledby="ntPanelTitle">
+ 
+    <div class="nt-panel-header">
+      <div class="nt-panel-title">
+        <div class="nt-icon-wrap">
+          <i class="fa-solid fa-circle-plus"></i>
+        </div>
+        <div>
+          <h2 id="ntPanelTitle">Create New Task</h2>
+          <p>Fill in the details below</p>
+        </div>
       </div>
-
-      <!-- DESCRIPTION INPUT -->
+      <button class="nt-close-btn" id="closeNewTaskBtn" aria-label="Close panel">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+ 
+    <div class="nt-panel-body">
+ 
+      <!-- Task Title -->
       <div class="form-group">
-        <label>Description</label>
-
-        <textarea
-          data-testid="test-todo-edit-description-input"
-        >Build a highly polished frontend dashboard that demonstrates responsive layouts and accessibility.</textarea>
+        <label for="ntTitle">
+          <i class="fa-solid fa-heading"></i> Task Title <span class="required">*</span>
+        </label>
+        <input type="text" id="ntTitle" placeholder="e.g. Build login page..." />
       </div>
+      
+      <!-- Error message shown if title is missing -->
+      <p class="nt-error" id="ntError">Please enter a task title.</p>
 
-      <!-- PRIORITY SELECT -->
+      <!-- Description -->
       <div class="form-group">
-        <label>Priority</label>
-
-        <select
-          data-testid="test-todo-edit-priority-select"
-        >
-          <option>High</option>
-          <option>Medium</option>
-          <option>Low</option>
-        </select>
+        <label for="ntDesc">
+          <i class="fa-solid fa-align-left"></i> Description
+        </label>
+        <textarea id="ntDesc" rows="3" placeholder="What needs to be done?"></textarea>
       </div>
-
-      <!-- DATE -->
+ 
+      <!-- Priority + Status side by side -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="ntPriority">
+            <i class="fa-solid fa-flag"></i> Priority
+          </label>
+          <select id="ntPriority">
+            <option value="High">🔥 High</option>
+            <option value="Medium" selected>⚡ Medium</option>
+            <option value="Low">✅ Low</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="ntStatus">
+            <i class="fa-solid fa-spinner"></i> Status
+          </label>
+          <select id="ntStatus">
+            <option value="In Progress">In Progress</option>
+            <option value="Pending" selected>Pending</option>
+            <option value="Under Review">Under Review</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+      </div>
+ 
+      <!-- Due Date -->
       <div class="form-group">
-        <label>Due Date</label>
-
-        <input
-          type="date"
-          data-testid="test-todo-edit-due-date-input"
-        />
+        <label for="ntDueDate">
+          <i class="fa-regular fa-calendar"></i> Due Date
+        </label>
+        <input type="date" id="ntDueDate" />
       </div>
-
-      <!-- ACTIONS -->
-      <div class="modal-actions">
-
-        <button
-          class="save-btn"
-          data-testid="test-todo-save-button"
-        >
-          Save Changes
-        </button>
-
-        <button
-          class="cancel-btn"
-          data-testid="test-todo-cancel-button"
-          id="cancelModalBtn"
-        >
-          Cancel
-        </button>
-
+ 
+      <!-- Tags -->
+      <div class="form-group">
+        <label for="ntTags">
+          <i class="fa-solid fa-tags"></i> Tags
+          <span class="hint">(comma-separated)</span>
+        </label>
+        <input type="text" id="ntTags" placeholder="e.g. Frontend, CSS, UI/UX" />
       </div>
+ 
+      
+ 
+    </div>
+ 
+    <div class="nt-panel-footer">
+      <button class="save-btn nt-save-btn" id="ntSaveBtn">
+        <i class="fa-solid fa-circle-plus"></i> Add Task
+      </button>
+      <button class="cancel-btn nt-cancel-btn" id="ntCancelBtn">
+        Discard
+      </button>
+    </div>
+ 
+  </aside>
+  <!-- ══ END NEW TASK PANEL ══ -->
 
-    <!--</div>
-    </div>-->
-  </div>
-
-  </div>
 
   <!-- SCRIPT -->
   <script src="script.js"></script>

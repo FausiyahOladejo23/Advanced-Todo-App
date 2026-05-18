@@ -27,12 +27,8 @@ preview/mobile.jpeg
 
 # Live Demo
 
-Add your deployed live link here.
-
-Example:
-
 ```bash
-https://advanced-todo-dashboard.netlify.app
+https://fausiyah-advancedtodoapp.netlify.app/
 ```
 
 ---
@@ -217,7 +213,7 @@ This project was optimized with attention to:
 
 ---
 
-# Screenshots
+# PREVIEW
 
 ## Desktop
 ```bash
@@ -238,10 +234,9 @@ This project was optimized with attention to:
 
 # Deployment
 
-This project can be deployed easily using:
+This project was deployed using:
 
 - Netlify
-- Vercel
 - GitHub Pages
 
 Recommended:
@@ -267,13 +262,13 @@ Special attention was given to:
 
 ## Fausiyah Oladejo
 
-Frontend Developer & Computer Engineering Student
+Software Developer & Computer Engineering Student
 
 Passionate about:
-- frontend engineering
+- software engineering
 - responsive interfaces
 - UI/UX systems
-- modern web experiences
+- modern software experiences
 
 ---
 
