@@ -69,6 +69,259 @@ const ntError           = document.getElementById('ntError');
 const taskList          = document.getElementById('taskList');
 
 
+// ════════════════════════════════════════════════════════════════
+// B.  LOCALSTORAGE HELPERS
+// ════════════════════════════════════════════════════════════════
+//
+// We use ONE key in localStorage: "hng_tasks"
+// Its value is an array of task objects, stored as a JSON string.
+//
+// JSON (JavaScript Object Notation) is a way to turn a JavaScript
+// array or object into a plain string so it can be stored as text,
+// then turned back into an array/object when we need it.
+//
+// Example of what gets saved:
+//   "[{\"id\":\"t_1\",\"title\":\"My Task\",\"priority\":\"High\",...}]"
+ 
+var STORAGE_KEY = 'hng_tasks';
+ 
+ 
+// loadTasks()
+// Reads the saved string from localStorage and converts it back
+// into a JavaScript array.  Returns [] if nothing is saved yet.
+function loadTasks() {
+  var raw = localStorage.getItem(STORAGE_KEY);
+  // localStorage.getItem() returns null if the key doesn't exist.
+  if (!raw) return [];
+ 
+  // JSON.parse() converts the string back into a real JS array.
+  // We wrap it in try/catch in case the stored data is somehow
+  // corrupted — in that case we just start fresh with [].
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    return [];
+  }
+}
+ 
+ 
+// saveTasks(array)
+// Takes the current tasks array and writes it to localStorage.
+// JSON.stringify() converts the array into a text string.
+function saveTasks(tasks) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+}
+ 
+ 
+// generateId()
+// Creates a unique ID for each new task.
+// We combine the current timestamp (milliseconds since 1970) with
+// a random number so two tasks created at the same millisecond
+// still get different IDs.
+// Example result: "t_1716912345678_0.83291"
+function generateId() {
+  return 't_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+}
+ 
+ 
+// ── Load the saved tasks array into memory ───────────────────
+// This variable holds ALL user-created tasks for the whole session.
+// Every add/delete operation updates this array AND calls saveTasks().
+var savedTasks = loadTasks();
+ 
+ 
+// ════════════════════════════════════════════════════════════════
+// C.  RENDER SAVED TASKS ON PAGE LOAD
+// ════════════════════════════════════════════════════════════════
+//
+// When the page first loads (or is refreshed), we:
+//  1. Read the savedTasks array from localStorage
+//  2. Loop through it  (forEach goes through each item one by one)
+//  3. Build a card for each task and insert it into the page
+ 
+function renderAllSavedTasks() {
+  // Loop through every task object in the array.
+  // We use forEach which calls the function once per item.
+  // The order is oldest first (index 0), so we render them
+  // in the order they were created, newest will appear at top
+  // because we insert with afterbegin.
+  // To keep newest-first order after a refresh, we reverse the
+  // array before looping.
+  var tasksNewestFirst = savedTasks.slice().reverse();
+  // .slice() makes a copy so we don't mutate the original array.
+  // .reverse() flips the copy so the last-added task comes first.
+ 
+  tasksNewestFirst.forEach(function (task) {
+    // buildAndInsertCard() builds the HTML and injects it.
+    // false = don't animate (animation only plays when first created)
+    buildAndInsertCard(task, false);
+  });
+}
+ 
+ 
+// buildAndInsertCard(task, animate)
+// The single function responsible for turning a task DATA OBJECT
+// into a real HTML card on the page.
+//
+// task    = { id, title, desc, priority, status, dueDate, tags }
+// animate = true when newly created, false when loaded from storage
+function buildAndInsertCard(task, animate) {
+ 
+  // ── Compute display values from the raw data ───────────────
+ 
+  var priorityMap = {
+    'High':   { label: 'High Priority',   cls: 'high-priority',   icon: '🔥 Critical Task' },
+    'Medium': { label: 'Medium Priority', cls: 'medium-priority', icon: '⚡ Important Task' },
+    'Low':    { label: 'Low Priority',    cls: 'low-priority',    icon: '✅ Routine Task'   }
+  };
+  var pData = priorityMap[task.priority] || priorityMap['Medium'];
+ 
+  var statusMap = {
+    'In Progress':  'in-progress',
+    'Completed':    'completed',
+    'Under Review': 'review',
+    'Pending':      'pending'
+  };
+  var statusClass = statusMap[task.status] || 'pending';
+ 
+  // Format the due date from "YYYY-MM-DD" to "June 1, 2026"
+  var dueDateDisplay = '';
+  if (task.dueDate) {
+    dueDateDisplay = new Date(task.dueDate + 'T12:00:00').toLocaleDateString('en-US', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    });
+  }
+ 
+  // Build the tags HTML
+  var tagsHTML = '';
+  if (task.tags && task.tags.length > 0) {
+    task.tags.forEach(function (tag) {
+      tagsHTML += '<span>' + escapeHTML(tag) + '</span>';
+    });
+  }
+ 
+  // ── Build the card HTML ─────────────────────────────────────
+  // data-task-id stores the unique ID so we can find this task
+  // in the savedTasks array when we need to delete it.
+  var html = `
+    <article class="task-card new-card" data-task-id="${task.id}">
+      <div class="task-top">
+        <div class="task-left">
+          <label class="checkbox-wrapper">
+            <input type="checkbox" ${task.completed ? 'checked' : ''}/>
+            <span class="custom-checkbox"></span>
+          </label>
+          <div>
+            <h2 style="${task.completed ? 'text-decoration:line-through;opacity:0.5' : ''}">
+              ${escapeHTML(task.title)}
+            </h2>
+            <p class="task-status ${statusClass}">${escapeHTML(task.status)}</p>
+          </div>
+        </div>
+        <div class="task-actions">
+          <button class="icon-btn delete saved-delete-btn" aria-label="Delete task">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+ 
+      ${task.desc
+        ? `<p class="task-description">${escapeHTML(task.desc)}</p>`
+        : ''}
+ 
+      <div class="task-details">
+        <span class="priority ${pData.cls}">${pData.label}</span>
+        <span class="priority-indicator">${pData.icon}</span>
+        ${dueDateDisplay
+          ? `<span class="due-date">
+               <i class="fa-regular fa-calendar"></i> ${dueDateDisplay}
+             </span>`
+          : ''}
+      </div>
+ 
+      ${tagsHTML
+        ? `<div class="tags">${tagsHTML}</div>`
+        : ''}
+    </article>
+  `;
+ 
+  // Insert at the TOP of the task list
+  taskList.insertAdjacentHTML('afterbegin', html);
+ 
+  // The card we just inserted is now the first child
+  var newCard = taskList.firstElementChild;
+ 
+  // ── Animate entry (only for brand-new tasks) ────────────────
+  if (animate) {
+    newCard.style.opacity   = '0';
+    newCard.style.transform = 'translateY(-16px)';
+    // A tiny delay (10ms) lets the browser register the starting
+    // state before we apply the transition — without it the
+    // animation might not play.
+    setTimeout(function () {
+      newCard.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+      newCard.style.opacity    = '1';
+      newCard.style.transform  = 'translateY(0)';
+    }, 10);
+  }
+ 
+  // ── Wire the checkbox for this card ─────────────────────────
+  var cb = newCard.querySelector('input[type="checkbox"]');
+  var titleEl = newCard.querySelector('h2');
+  var statusEl = newCard.querySelector('.task-status');
+ 
+  cb.addEventListener('change', function () {
+    // Update the visual
+    if (cb.checked) {
+      titleEl.style.textDecoration = 'line-through';
+      titleEl.style.opacity = '0.5';
+    } else {
+      titleEl.style.textDecoration = '';
+      titleEl.style.opacity = '';
+    }
+ 
+    // Save the completed state back to localStorage
+    // Find the task object in savedTasks by its ID
+    var found = savedTasks.find(function (t) { return t.id === task.id; });
+    if (found) {
+      found.completed = cb.checked;
+      saveTasks(savedTasks);
+    }
+  });
+ 
+  // ── Wire the delete button ───────────────────────────────────
+  var delBtn = newCard.querySelector('.saved-delete-btn');
+  delBtn.addEventListener('click', function () {
+    if (!window.confirm('Delete this task? This cannot be undone.')) return;
+ 
+    // 1. Animate the card out
+    newCard.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    newCard.style.opacity    = '0';
+    newCard.style.transform  = 'scale(0.95)';
+ 
+    setTimeout(function () {
+      // 2. Remove the card from the DOM (the page)
+      newCard.remove();
+ 
+      // 3. Remove the task from the savedTasks array.
+      //    filter() creates a NEW array that only keeps items
+      //    where the condition is true — i.e. every task EXCEPT
+      //    the one with this ID.
+      savedTasks = savedTasks.filter(function (t) { return t.id !== task.id; });
+ 
+      // 4. Save the updated array back to localStorage.
+      //    Next refresh will load the array without this task.
+      saveTasks(savedTasks);
+ 
+    }, 300);
+  });
+}
+ 
+ 
+// ── Actually run the render when the page loads ──────────────
+renderAllSavedTasks();
+
+
 
 // ════════════════════════════════════════════════════════════════
 // 2.  INLINE EDIT  —  SWAP CARD VIEW  ↔  EDIT FORM
@@ -420,117 +673,47 @@ ntSaveBtn.addEventListener('click', function () {
   ntTitle.style.outline = '';
   ntError.style.display = 'none';
 
-  // ── Build priority data ─────────────────────────────────
-  var priorityMap = {
-    'High':   { label: 'High Priority',   cls: 'high-priority',   icon: '🔥 Critical Task' },
-    'Medium': { label: 'Medium Priority', cls: 'medium-priority', icon: '⚡ Important Task' },
-    'Low':    { label: 'Low Priority',    cls: 'low-priority',    icon: '✅ Routine Task'   }
-  };
-  var pData = priorityMap[priority] || priorityMap['Medium'];
 
-  // ── Build status data ───────────────────────────────────
-  var statusMap = {
-    'In Progress':  'in-progress',
-    'Completed':    'completed',
-    'Under Review': 'review',
-    'Pending':      'pending'
-  };
-  var statusClass = statusMap[status] || 'pending';
-
-  // ── Format due date for display ─────────────────────────
-  // If a date was entered, convert "2026-06-01" → "June 1, 2026"
-  var dueDateDisplay = '';
-  if (dueDate) {
-    dueDateDisplay = new Date(dueDate + 'T12:00:00').toLocaleDateString('en-US', {
-      year: 'numeric', month: 'long', day: 'numeric'
-    });
-  }
-
-  // ── Build tags HTML ─────────────────────────────────────
-  // If the user typed "Frontend, CSS" we split at commas,
-  // trim each piece, and wrap it in a <span>
-  var tagsHTML = '';
+// Parse tags: "Frontend, CSS" → ["Frontend", "CSS"]
+  var tags = [];
   if (tagsRaw) {
-    tagsRaw.split(',').forEach(function (tag) {
-      var clean = tag.trim();
-      if (clean) {
-        tagsHTML += '<span>' + clean + '</span>';
-      }
+    tagsRaw.split(',').forEach(function (t) {
+      var clean = t.trim();
+      if (clean) tags.push(clean);
     });
   }
-
-  // ── Build the new card HTML string ─────────────────────
-  // We use template literals (backtick strings) to write HTML
-  // with variables embedded using ${...}
-  var newCardHTML = `
-    <article class="task-card new-card">
-      <div class="task-top">
-        <div class="task-left">
-          <label class="checkbox-wrapper">
-            <input type="checkbox"/>
-            <span class="custom-checkbox"></span>
-          </label>
-          <div>
-            <h2>${escapeHTML(title)}</h2>
-            <p class="task-status ${statusClass}">${status}</p>
-          </div>
-        </div>
-        <div class="task-actions">
-          <button class="icon-btn delete" aria-label="Delete task">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        </div>
-      </div>
-
-      ${desc ? `<p class="task-description">${escapeHTML(desc)}</p>` : ''}
-
-      <div class="task-details">
-        <span class="priority ${pData.cls}">${pData.label}</span>
-        <span class="priority-indicator">${pData.icon}</span>
-        ${dueDateDisplay
-          ? `<span class="due-date"><i class="fa-regular fa-calendar"></i> ${dueDateDisplay}</span>`
-          : ''
-        }
-      </div>
-
-      ${tagsHTML ? `<div class="tags">${tagsHTML}</div>` : ''}
-    </article>
-  `;
-
-  // ── Inject the card into the task list ─────────────────
-  // insertAdjacentHTML('afterbegin', ...) puts it at the VERY TOP
-  // of the task list, above all existing cards.
-  taskList.insertAdjacentHTML('afterbegin', newCardHTML);
-
-  // ── Wire the delete button on the new card ──────────────
-  // The new card is now the FIRST child of taskList.
-  var newCard = taskList.firstElementChild;
-
-  // Animate it sliding in from the top
-  newCard.style.opacity   = '0';
-  newCard.style.transform = 'translateY(-16px)';
-  setTimeout(function () {
-    newCard.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-    newCard.style.opacity    = '1';
-    newCard.style.transform  = 'translateY(0)';
-  }, 10);
-
-  // Wire its delete button
-  var newDeleteBtn = newCard.querySelector('.delete');
-  if (newDeleteBtn) {
-    newDeleteBtn.addEventListener('click', function () {
-      if (window.confirm('Delete this task?')) {
-        newCard.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-        newCard.style.opacity    = '0';
-        newCard.style.transform  = 'scale(0.95)';
-        setTimeout(function () { newCard.remove(); }, 300);
-      }
-    });
-  }
-
-  // ── Close the panel ─────────────────────────────────────
+ 
+  // ── Build the task object ────────────────────────────────────
+  // This is the data we will store in localStorage.
+  // Every property is a plain value (string, boolean, array)
+  // because localStorage can only store text — no DOM elements,
+  // no functions, no complex objects.
+  var newTask = {
+    id:        generateId(),    // unique ID, e.g. "t_1716912345_0.83"
+    title:     title,
+    desc:      desc,
+    priority:  priority,        // "High" / "Medium" / "Low"
+    status:    status,          // "In Progress" / "Completed" / etc.
+    dueDate:   dueDate,         // "YYYY-MM-DD" or ""
+    tags:      tags,            // ["Frontend", "CSS"] or []
+    completed: false,           // checkbox state
+    createdAt: Date.now()       // timestamp for ordering
+  };
+ 
+  // ── Save to localStorage ─────────────────────────────────────
+  // 1. Add the new task to our in-memory array
+  savedTasks.push(newTask);
+  // 2. Write the updated array to localStorage as a JSON string
+  saveTasks(savedTasks);
+  // Now even if the page refreshes, this task will be reloaded.
+ 
+  // ── Build and insert the card on the page ────────────────────
+  buildAndInsertCard(newTask, true);   // true = animate entry
+ 
+  // ── Close and reset the panel ────────────────────────────────
   closeNewTaskPanel();
 });
+
 
 
 // ── escapeHTML helper ───────────────────────────────────────

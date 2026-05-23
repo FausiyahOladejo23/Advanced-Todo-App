@@ -438,7 +438,6 @@ body{
 .due-date,
 .time-left,
 .priority-indicator,
-.due-date,
 .overdue-indicator,
 .status-control-wrapper select{
   padding:10px 14px;
@@ -916,7 +915,7 @@ select:focus-visible{
   inset: 0;                           /* covers the whole screen */
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(3px);
-  z-index: 900;
+  z-index: 0;
   opacity: 0;
   pointer-events: none;               /* not clickable when hidden */
   transition: opacity 0.3s ease;
@@ -942,7 +941,7 @@ select:focus-visible{
   flex-direction: column;
   transform: translateX(100%);        /* starts off-screen */
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0px 0 40px rgba(0, 0, 0, 0.4);
 }
  
 .new-task-panel.open {
@@ -1078,15 +1077,16 @@ select:focus-visible{
 }
  
 /* ── Mobile: panel goes full-width on small screens ─────── */
-@media (max-width: 480px) {
+/*@media (max-width: 480px) {
   .new-task-panel {
     width: 100vw;
+    height: 95vh;
   }
  
   .form-row {
     grid-template-columns: 1fr;
   }
-}
+}*/
 
 
 
@@ -1163,4 +1163,12 @@ select:focus-visible{
     font-size: 14px;
   }
 
+  .new-task-panel {
+    width: 100vw;
+    height: 99vh;
+  }
+ 
+  .form-row {
+    grid-template-columns: 1fr;
+  }
 }
